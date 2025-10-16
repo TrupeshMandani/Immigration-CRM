@@ -1,25 +1,25 @@
-const fs = require('fs');
-const path = require('path');
-const OpenAI = require('openai');
+const fs = require("fs");
+const path = require("path");
+const OpenAI = require("openai");
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 /**
  * Helper: build one user message with text + (optionally) images.
- * For now we pass the concatenated text. In Step 7 we’ll add images for scanned PDFs.
+ * For now we pass the concatenated text. In Step 7 we'll add images for scanned PDFs.
  */
 function buildUserContent({ text, images = [] }) {
-    const content = [];
-    if (text && text.trim().length) {
-      // new SDK expects 'input_text'
-      content.push({ type: 'input_text', text });
-    }
-    for (const img of images) {
-      // vision inputs still use 'input_image'
-      content.push({ type: 'input_image', image_url: img });
-    }
-    return content;
+  const content = [];
+  if (text && text.trim().length) {
+    content.push({ type: "text", text });
   }
-  
+  for (const img of images) {
+    content.push({
+      type: "image_url",
+      image_url: { url: img },
+    });
+  }
+  return content;
+}
 
 /**
  * Ask the model to produce STRICT JSON of important fields.
@@ -35,32 +35,37 @@ Return ONLY a single JSON object with key:value pairs of IMPORTANT fields you de
 
   const userContent = buildUserContent({ text, images });
 
-  const response = await client.responses.create({
-    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-    input: [
-      { role: 'system', content: system },
-      { role: 'user', content: userContent }
-    ]
+  const response = await client.chat.completions.create({
+    model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: userContent },
+    ],
+    response_format: { type: "json_object" },
   });
 
   // Try to parse JSON safely
   let json;
   try {
-    const raw = response.output_text || '';
+    const raw = response.choices[0].message.content || "";
     json = JSON.parse(raw);
   } catch (e) {
     // Fallback: try to find JSON substring
-    const raw = (response.output_text || '').trim();
-    const start = raw.indexOf('{');
-    const end = raw.lastIndexOf('}');
+    const raw = (response.choices[0].message.content || "").trim();
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
     if (start >= 0 && end >= start) {
-      try { json = JSON.parse(raw.slice(start, end + 1)); } catch (_) { json = {}; }
+      try {
+        json = JSON.parse(raw.slice(start, end + 1));
+      } catch (_) {
+        json = {};
+      }
     } else {
       json = {};
     }
   }
   // Ensure object
-  if (!json || typeof json !== 'object' || Array.isArray(json)) json = {};
+  if (!json || typeof json !== "object" || Array.isArray(json)) json = {};
   return json;
 }
 

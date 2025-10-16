@@ -1,9 +1,32 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const ctrl = require('./student.controller');
+const ctrl = require("./student.controller");
+const {
+  authenticateToken,
+  requireAdmin,
+  requireStudent,
+} = require("../../middleware/auth");
 
-router.get('/', ctrl.getAllStudents);
-router.get('/:aiKey', ctrl.getStudentByKey);
-router.get('/:aiKey/files', ctrl.getStudentFiles);
+// Public routes (for students to access their own data)
+router.get("/:aiKey", ctrl.getStudentByKey);
+router.get("/:aiKey/files", ctrl.getStudentFiles);
+
+// Admin-only routes
+router.get("/", authenticateToken, requireAdmin, ctrl.getAllStudents);
+router.get(
+  "/pending/contacts",
+  authenticateToken,
+  requireAdmin,
+  ctrl.getPendingContacts
+);
+router.get("/admin/:id", authenticateToken, requireAdmin, ctrl.getStudentById);
+router.post(
+  "/:id/activate",
+  authenticateToken,
+  requireAdmin,
+  ctrl.activateStudent
+);
+router.put("/:id", authenticateToken, requireAdmin, ctrl.updateStudent);
+router.delete("/:id", authenticateToken, requireAdmin, ctrl.deleteStudent);
 
 module.exports = router;

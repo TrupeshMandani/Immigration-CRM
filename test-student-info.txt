@@ -1,0 +1,13 @@
+
+Student Information:
+Name: John Doe
+Date of Birth: 1990-05-15
+UCI: 1234567890
+Application Number: APP-2024-001
+Passport Number: A1234567
+Program: Computer Science
+College: University of Toronto
+Country: Canada
+Email: john.doe@example.com
+Phone: +1-555-123-4567
+    
