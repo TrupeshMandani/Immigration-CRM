@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import { studentService } from "../../services/authService";
 import Navbar from "../../components/layout/Navbar";
 import Card from "../../components/common/Card";
@@ -86,7 +85,7 @@ const StudentList = () => {
             <Link to="/admin/students/create">
               <Button variant="primary">
                 <svg
-                  className="w-4 h-4 mr-2"
+                  className="w-4 h-4 flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

@@ -21,6 +21,12 @@ router.get(
 );
 router.get("/admin/:id", authenticateToken, requireAdmin, ctrl.getStudentById);
 router.post(
+  "/:id/approve-contact",
+  authenticateToken,
+  requireAdmin,
+  ctrl.approveContactRequest
+);
+router.post(
   "/:id/activate",
   authenticateToken,
   requireAdmin,

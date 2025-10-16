@@ -112,7 +112,7 @@ const StudentDashboard = () => {
                 <Link to="/student/profile" className="block">
                   <Button variant="outline" className="w-full justify-start">
                     <svg
-                      className="w-4 h-4 mr-2"
+                      className="w-4 h-4 flex-shrink-0"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -129,7 +129,7 @@ const StudentDashboard = () => {
                 </Link>
                 <Button variant="outline" className="w-full justify-start">
                   <svg
-                    className="w-4 h-4 mr-2"
+                    className="w-4 h-4 flex-shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -145,7 +145,7 @@ const StudentDashboard = () => {
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <svg
-                    className="w-4 h-4 mr-2"
+                    className="w-4 h-4 flex-shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

@@ -60,6 +60,12 @@ export const studentService = {
     return response.data;
   },
 
+  // Approve contact request and trigger onboarding (admin only)
+  approveContactRequest: async (id) => {
+    const response = await api.post(`/students/${id}/approve-contact`);
+    return response.data;
+  },
+
   // Activate student (admin only)
   activateStudent: async (id, username, password) => {
     const response = await api.post(`/students/${id}/activate`, {

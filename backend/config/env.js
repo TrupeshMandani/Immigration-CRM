@@ -11,4 +11,12 @@ module.exports = {
   DRIVE_PARENT_FOLDER_ID: process.env.DRIVE_PARENT_FOLDER_ID,
   JWT_SECRET: process.env.JWT_SECRET || "your-secret-key-change-in-production",
   JWT_EXPIRY: process.env.JWT_EXPIRY || "7d",
+  SMTP_HOST: process.env.SMTP_HOST,
+  SMTP_PORT: process.env.SMTP_PORT,
+  SMTP_USER: process.env.SMTP_USER,
+  SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+  EMAIL_FROM: process.env.EMAIL_FROM || process.env.SMTP_USER,
+  APP_BASE_URL: process.env.APP_BASE_URL || "http://localhost:5173",
+  ADMIN_NOTIFICATIONS_EMAIL:
+    process.env.ADMIN_NOTIFICATIONS_EMAIL || process.env.SMTP_USER,
 };

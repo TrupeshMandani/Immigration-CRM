@@ -40,6 +40,7 @@ const CreateStudent = () => {
         message: formData.message,
       };
 
+      // eslint-disable-next-line no-unused-vars
       const contactResponse = await studentService.submitContact(contactData);
 
       // Then activate the student with credentials
