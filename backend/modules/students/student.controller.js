@@ -30,7 +30,12 @@ const buildApprovalEmail = ({ name, username, password }) => {
         <p style="margin:8px 0 0 0;"><strong>Username:</strong> ${username}</p>
         <p style="margin:8px 0 0 0;"><strong>Temporary Password:</strong> ${password}</p>
       </div>
-      <p>For security, you will be prompted to create a new password immediately after your first login.</p>
+      <div style="margin-bottom:24px; padding:12px 16px; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:8px;">
+        <p style="margin:0; color:#92400e;">
+          This password is temporary. You will be asked to create a new password immediately after your first login.
+        </p>
+      </div>
+      <p>For security, do not share these credentials with anyone.</p>
       <p>If you did not request this access or have any questions, please contact our support team.</p>
       <p style="margin-top:32px;">Best regards,<br/>Immigration CRM Team</p>
     </div>

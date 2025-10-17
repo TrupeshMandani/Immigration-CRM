@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { studentService } from "../../services/authService";
 import Navbar from "../../components/layout/Navbar";
@@ -204,7 +205,9 @@ const StudentProfile = () => {
             </Card.Body>
             <Card.Footer>
               <div className="flex space-x-3">
-                <Button variant="outline">Change Password</Button>
+                <Link to="/student/change-password">
+                  <Button variant="outline">Change Password</Button>
+                </Link>
                 <Button variant="outline">Update Contact Info</Button>
               </div>
             </Card.Footer>

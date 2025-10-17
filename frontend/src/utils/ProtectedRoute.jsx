@@ -6,7 +6,7 @@ const ProtectedRoute = ({
   requireAdmin = false,
   requireStudent = false,
 }) => {
-  const { isAuthenticated, isAdmin, isStudent, loading } = useAuth();
+  const { isAuthenticated, isAdmin, isStudent, loading, user } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -27,6 +27,16 @@ const ProtectedRoute = ({
 
   if (requireStudent && !isStudent) {
     return <Navigate to="/" replace />;
+  }
+
+  if (
+    requireStudent &&
+    user?.isFirstLogin &&
+    location.pathname !== "/student/change-password"
+  ) {
+    return (
+      <Navigate to="/student/change-password" state={{ from: location }} replace />
+    );
   }
 
   return children;

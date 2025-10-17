@@ -19,6 +19,7 @@ import Faq from "./pages/Faq";
 // Student Pages (will be created next)
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentProfile from "./pages/student/StudentProfile";
+import ChangePassword from "./pages/student/ChangePassword";
 
 // Admin Pages (will be created next)
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -55,6 +56,14 @@ function App() {
               element={
                 <ProtectedRoute requireStudent>
                   <StudentProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/change-password"
+              element={
+                <ProtectedRoute requireStudent>
+                  <ChangePassword />
                 </ProtectedRoute>
               }
             />
