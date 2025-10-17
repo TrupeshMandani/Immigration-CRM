@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Navbar from "../../components/layout/Navbar";
+import AdminLayout from "../../components/layout/AdminLayout";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
@@ -75,10 +75,8 @@ const ContactRequests = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <AdminLayout>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
             Contact Requests
@@ -201,7 +199,7 @@ const ContactRequests = () => {
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 

@@ -26,6 +26,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import StudentList from "./pages/admin/StudentList";
 import CreateStudent from "./pages/admin/CreateStudent";
 import ContactRequests from "./pages/admin/ContactRequests";
+import StudentProfiles from "./pages/admin/StudentProfiles";
+import StudentDetail from "./pages/admin/StudentDetail";
 
 function App() {
   return (
@@ -94,10 +96,26 @@ function App() {
               }
             />
             <Route
+              path="/admin/student-profiles"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <StudentProfiles />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/admin/students/create"
               element={
                 <ProtectedRoute requireAdmin>
                   <CreateStudent />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/students/:id"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <StudentDetail />
                 </ProtectedRoute>
               }
             />

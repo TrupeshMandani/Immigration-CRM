@@ -293,6 +293,119 @@ exports.deleteStudent = async (req, res) => {
   }
 };
 
+// create student (admin only)
+exports.createStudent = async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      phone,
+      message,
+      status = "active",
+      profile = {},
+    } = req.body;
+
+    if (!name || !email) {
+      return res
+        .status(400)
+        .json({ message: "Name and email are required" });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedUsername = normalizedEmail;
+
+    const existingStudent = await Student.findOne({
+      $or: [
+        { email: normalizedEmail },
+        { username: normalizedUsername },
+        { "contactInfo.email": normalizedEmail },
+      ],
+    });
+
+    if (existingStudent) {
+      return res.status(400).json({
+        message: "A student with this email or username already exists",
+      });
+    }
+
+    const existingAdmin = await Admin.findOne({
+      $or: [{ email: normalizedEmail }, { username: normalizedUsername }],
+    });
+
+    if (existingAdmin) {
+      return res.status(400).json({
+        message: "An admin already uses this email or username",
+      });
+    }
+
+    const tempPassword = createTempPassword();
+
+    const student = new Student({
+      aiKey: `admin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      status: ["active", "pending", "inactive"].includes(status)
+        ? status
+        : "active",
+      username: normalizedUsername,
+      email: normalizedEmail,
+      password: tempPassword,
+      isFirstLogin: true,
+      profile,
+      contactInfo: {
+        name,
+        email: normalizedEmail,
+        phone,
+        message,
+      },
+    });
+
+    await student.save();
+
+    try {
+      await sendEmail({
+        to: normalizedEmail,
+        subject: "Your Immigration CRM account",
+        html: buildApprovalEmail({
+          name,
+          username: normalizedUsername,
+          password: tempPassword,
+        }),
+      });
+    } catch (emailError) {
+      console.error("Failed to send student welcome email:", emailError);
+    }
+
+    try {
+      await sendEmail({
+        to: ADMIN_NOTIFICATIONS_EMAIL || normalizedEmail,
+        subject: "Student account created",
+        html: `
+          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #0f172a;">
+            <h2 style="color:#1d4ed8;margin-bottom:12px;">New student created</h2>
+            <p style="margin:0 0 16px 0;">
+              ${name} (${normalizedEmail}) has been added and the welcome email was sent.
+            </p>
+          </div>
+        `,
+      });
+    } catch (notifyError) {
+      console.error("Failed to send admin notification email:", notifyError);
+    }
+
+    res.status(201).json({
+      message: "Student created successfully",
+      student: {
+        id: student._id,
+        username: student.username,
+        email: student.email,
+        status: student.status,
+      },
+    });
+  } catch (error) {
+    console.error("Create student error:", error);
+    res.status(500).json({ message: "Failed to create student" });
+  }
+};
+
 // list Drive files
 exports.getStudentFiles = async (req, res) => {
   const student = await Student.findOne({ aiKey: req.params.aiKey });

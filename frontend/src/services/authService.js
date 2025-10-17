@@ -48,6 +48,12 @@ export const studentService = {
     return response.data;
   },
 
+  // Create student (admin only)
+  createStudent: async (payload) => {
+    const response = await api.post("/students", payload);
+    return response.data;
+  },
+
   // Get pending contacts (admin only)
   getPendingContacts: async () => {
     const response = await api.get("/students/pending/contacts");

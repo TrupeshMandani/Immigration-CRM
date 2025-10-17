@@ -12,6 +12,7 @@ router.get("/:aiKey", ctrl.getStudentByKey);
 router.get("/:aiKey/files", ctrl.getStudentFiles);
 
 // Admin-only routes
+router.post("/", authenticateToken, requireAdmin, ctrl.createStudent);
 router.get("/", authenticateToken, requireAdmin, ctrl.getAllStudents);
 router.get(
   "/pending/contacts",

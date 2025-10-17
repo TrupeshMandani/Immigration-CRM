@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { studentService } from "../../services/authService";
-import Navbar from "../../components/layout/Navbar";
+import AdminLayout from "../../components/layout/AdminLayout";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
@@ -60,20 +60,17 @@ const StudentList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="flex items-center justify-center h-96">
+      <AdminLayout>
+        <div className="flex h-96 items-center justify-center">
           <Loading size="lg" text="Loading students..." />
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <AdminLayout>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -290,7 +287,7 @@ const StudentList = () => {
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 

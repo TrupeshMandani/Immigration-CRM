@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { studentService } from "../../services/authService";
-import Navbar from "../../components/layout/Navbar";
+import AdminLayout from "../../components/layout/AdminLayout";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
@@ -51,20 +51,17 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="flex items-center justify-center h-96">
+      <AdminLayout>
+        <div className="flex h-96 items-center justify-center">
           <Loading size="lg" text="Loading dashboard..." />
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <AdminLayout>
+      <div className="mx-auto w-full max-w-7xl space-y-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
             Welcome back, {user?.username}!
@@ -190,9 +187,10 @@ const AdminDashboard = () => {
               {recentStudents.length > 0 ? (
                 <div className="space-y-4">
                   {recentStudents.map((student) => (
-                    <div
+                    <Link
                       key={student._id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      to={`/admin/students/${student._id}`}
+                      className="flex items-center justify-between rounded-lg border border-transparent bg-gray-50 p-3 transition hover:border-primary/40 hover:bg-white"
                     >
                       <div>
                         <p className="font-medium text-gray-900">
@@ -218,7 +216,7 @@ const AdminDashboard = () => {
                         {student.status?.charAt(0).toUpperCase() +
                           student.status?.slice(1)}
                       </span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (
@@ -321,7 +319,7 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 
