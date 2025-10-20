@@ -7,6 +7,7 @@ const {
   deleteLocalFile,
 } = require("../drive/drive.service");
 const { upsertStudent } = require("../students/student.service");
+const { prioritizeFields } = require("../extract/field-priority");
 const Student = require("../../models/Student");
 
 exports.handleUpload = async (req, res) => {
@@ -62,10 +63,19 @@ exports.handleUpload = async (req, res) => {
     console.log("✅ All files uploaded to Drive");
 
     // 4) upsert student with AI-extracted profile and drive info
+    const normalizedDocuments = uploaded.map((file) => ({
+      fileId: file.id,
+      name: file.name || file.originalname,
+      mimeType: file.mimeType || "application/octet-stream",
+      webViewLink: file.webViewLink || "#",
+      uploadedAt: new Date(),
+    }));
+
     const student = await upsertStudent({
       aiKey,
       profile, // AI-extracted profile data
       drive: { folderId: folder.id, webViewLink: folder.webViewLink },
+      documents: normalizedDocuments,
     });
     console.log("👤 Student record created/updated:", student.aiKey);
 
@@ -74,9 +84,12 @@ exports.handleUpload = async (req, res) => {
       aiKey,
       driveFolder: folder.webViewLink,
       uploaded,
-      student,
+      student: {
+        ...student.toObject(),
+        profile: prioritizeFields(student.profile || {}),
+      },
       extractedFields: Object.keys(profile).length,
-      profile: profile, // Include the AI-extracted profile data
+      profile: prioritizeFields(profile), // Include the AI-extracted profile data with priority ordering
     });
   } catch (err) {
     console.error("Upload error:", err);

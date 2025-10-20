@@ -7,6 +7,7 @@ import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
 import Toast from "../../components/common/Toast";
+import ProfileFieldDisplay from "../../components/student/ProfileFieldDisplay";
 
 const StudentProfile = () => {
   const { user } = useAuth();
@@ -84,9 +85,9 @@ const StudentProfile = () => {
   return (
     <StudentLayout>
       <div className="mx-auto w-full max-w-4xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
+        <div className="">
           <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
-          <p className="text-gray-600 mt-2">
+          <p className="mt-2 text-sm text-gray-600">
             View and manage your immigration information
           </p>
         </div>
@@ -99,37 +100,25 @@ const StudentProfile = () => {
             </Card.Header>
             <Card.Body>
               {student?.contactInfo ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <ProfileField
+                    label="Full Name"
+                    value={student.contactInfo.name || "Not provided"}
+                  />
+                  <ProfileField
+                    label="Email"
+                    value={student.contactInfo.email || "Not provided"}
+                  />
+                  <ProfileField
+                    label="Phone"
+                    value={student.contactInfo.phone || "Not provided"}
+                  />
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">
-                      Full Name
-                    </label>
-                    <p className="text-gray-900">
-                      {student.contactInfo.name || "Not provided"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">
-                      Email
-                    </label>
-                    <p className="text-gray-900">
-                      {student.contactInfo.email || "Not provided"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">
-                      Phone
-                    </label>
-                    <p className="text-gray-900">
-                      {student.contactInfo.phone || "Not provided"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                       Status
-                    </label>
+                    </p>
                     <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      className={`mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         student.status === "active"
                           ? "bg-green-100 text-green-800"
                           : "bg-yellow-100 text-yellow-800"
@@ -160,16 +149,11 @@ const StudentProfile = () => {
             </Card.Header>
             <Card.Body>
               {student?.profile && Object.keys(student.profile).length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <dl className="divide-y divide-gray-200">
                   {Object.entries(student.profile).map(([key, value]) => (
-                    <div key={key}>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        {key.replace(/([A-Z])/g, " $1").trim()}
-                      </label>
-                      <p className="text-gray-900">{value || "Not provided"}</p>
-                    </div>
+                    <ProfileFieldDisplay key={key} label={key} value={value} />
                   ))}
-                </div>
+                </dl>
               ) : (
                 <div className="text-center py-8">
                   <svg
@@ -202,41 +186,31 @@ const StudentProfile = () => {
               <h2 className="text-xl font-semibold">Account Information</h2>
             </Card.Header>
             <Card.Body>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
-                    Username
-                  </label>
-                  <p className="text-gray-900">{user?.username}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
-                    Student ID
-                  </label>
-                  <p className="text-gray-900 font-mono text-sm">
-                    {student?.aiKey}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
-                    Account Created
-                  </label>
-                  <p className="text-gray-900">
-                    {student?.createdAt
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <ProfileField
+                  label="Username"
+                  value={user?.username || "Unknown"}
+                />
+                <ProfileField
+                  label="Student ID"
+                  value={student?.aiKey || "Unknown"}
+                />
+                <ProfileField
+                  label="Account Created"
+                  value={
+                    student?.createdAt
                       ? new Date(student.createdAt).toLocaleDateString()
-                      : "Unknown"}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
-                    Last Updated
-                  </label>
-                  <p className="text-gray-900">
-                    {student?.updatedAt
+                      : "Unknown"
+                  }
+                />
+                <ProfileField
+                  label="Last Updated"
+                  value={
+                    student?.updatedAt
                       ? new Date(student.updatedAt).toLocaleDateString()
-                      : "Unknown"}
-                  </p>
-                </div>
+                      : "Unknown"
+                  }
+                />
               </div>
             </Card.Body>
             <Card.Footer>
@@ -285,5 +259,14 @@ const StudentProfile = () => {
     </StudentLayout>
   );
 };
+
+const ProfileField = ({ label, value }) => (
+  <div>
+    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+      {label}
+    </p>
+    <p className="mt-1 text-sm text-gray-900">{value}</p>
+  </div>
+);
 
 export default StudentProfile;

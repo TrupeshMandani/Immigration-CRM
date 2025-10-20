@@ -146,17 +146,23 @@ async function uploadFileToDrive(filePath, fileName, folderId) {
     const res = await drive.files.create({
       resource: metadata,
       media,
-      fields: "id, webViewLink, parents",
+      fields: "id, name, mimeType, webViewLink, parents",
     });
 
     console.log(`☁️ Uploaded file: ${fileName} → ${folderId}`);
-    return res.data;
+    return {
+      id: res.data.id,
+      name: res.data.name || fileName,
+      mimeType: res.data.mimeType || "application/octet-stream",
+      webViewLink: res.data.webViewLink || "#",
+    };
   } catch (error) {
     console.error("❌ Error uploading file to Drive:", error.message);
     // Return a mock file for testing
     return {
       id: `mock-file-${Date.now()}`,
       name: fileName,
+      mimeType: "application/octet-stream",
       webViewLink: "#",
     };
   }

@@ -217,6 +217,7 @@ exports.activateStudent = async (req, res) => {
       message: "Student account activated successfully",
       student: {
         id: student._id,
+        aiKey: student.aiKey,
         username: student.username,
         email: student.email,
         contactInfo: student.contactInfo,
@@ -412,43 +413,20 @@ exports.getStudentFiles = async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    if (!student?.drive?.folderId) {
-      return res.json({
-        folder: null,
-        files: [],
-        message: "No Drive folder configured yet",
-      });
-    }
+    // Return documents from student model's documents array
+    const documents = student.documents || [];
 
-    try {
-      const drive = getDriveClient();
-      const result = await drive.files.list({
-        q: `'${student.drive.folderId}' in parents and trashed=false`,
-        fields: "files(id,name,webViewLink,modifiedTime)",
-      });
+    console.log(
+      `📁 Fetching files for student ${req.params.aiKey}: ${documents.length} documents found`
+    );
 
-      res.json({
-        folder: student.drive.webViewLink,
-        files: result.data.files || [],
-      });
-    } catch (driveError) {
-      console.error("Drive API error:", driveError.message);
-      // Return mock files for testing
-      res.json({
-        folder: student.drive.webViewLink,
-        files: [
-          {
-            id: "mock-file-1",
-            name: "test-document.txt",
-            webViewLink: "#",
-            modifiedTime: new Date().toISOString(),
-          },
-        ],
-        message: "Using mock files (Drive API not configured)",
-      });
-    }
+    res.json({
+      folder: student.drive?.webViewLink || null,
+      files: documents,
+      totalFiles: documents.length,
+    });
   } catch (error) {
     console.error("Get student files error:", error);
-    res.status(500).json({ error: "internal_server_error" });
+    res.status(500).json({ error: "Failed to retrieve documents" });
   }
 };

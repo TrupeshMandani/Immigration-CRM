@@ -49,6 +49,15 @@ const studentSchema = new mongoose.Schema(
       phone: String,
       message: String,
     },
+    documents: [
+      {
+        fileId: String,
+        name: String,
+        mimeType: String,
+        webViewLink: String,
+        uploadedAt: Date,
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -66,7 +66,23 @@ GOOGLE_PRIVATE_KEY=your-private-key
 DRIVE_PARENT_FOLDER_ID=your-drive-folder-id
 ```
 
-4. Start the backend server:
+4. Set up Google Drive OAuth (required for file storage):
+
+```bash
+node scripts/setup-google-drive-oauth.js
+```
+
+Follow the prompts to:
+
+- Visit the authorization URL
+- Sign in with your Google account
+- Grant permissions to the application
+- Copy the authorization code
+- Paste it into the terminal
+
+The script will create `config/oauth_token.json` automatically.
+
+5. Start the backend server:
 
 ```bash
 npm run dev
@@ -233,4 +249,3 @@ Immigration CRM/
 ## License
 
 This project is proprietary software for immigration business management.
-

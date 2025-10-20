@@ -5,18 +5,20 @@ import Card from "../../components/common/Card";
 import DocumentUpload from "../../components/student/DocumentUpload";
 import DocumentManager from "../../components/student/DocumentManager";
 import Toast from "../../components/common/Toast";
-import Button from "../../components/common/Button";
 import ErrorBoundary from "../../components/common/ErrorBoundary";
 
 const Documents = () => {
   const { user } = useAuth();
-  const [showUpload, setShowUpload] = useState(false);
   const [toast, setToast] = useState({
     show: false,
     message: "",
     type: "success",
   });
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Debug logging
+  console.log("📄 Documents page - User:", user);
+  console.log("📄 Documents page - User aiKey:", user?.aiKey);
 
   const handleUploadSuccess = (result) => {
     setToast({
@@ -26,7 +28,6 @@ const Documents = () => {
       } files and extracted ${result.extractedFields || 0} profile fields!`,
       type: "success",
     });
-    setShowUpload(false);
     // Trigger refresh of document manager
     setRefreshKey((prev) => prev + 1);
 
@@ -43,9 +44,9 @@ const Documents = () => {
   };
 
   const handleDocumentClick = (document) => {
-    if (document.webViewLink) {
-      window.open(document.webViewLink, "_blank");
-    }
+    // Let DocumentManager handle the click - it will show the viewer
+    // This handler is just for error cases or custom behavior
+    console.log("Document clicked:", document.name);
   };
 
   const closeToast = () => {
@@ -57,56 +58,30 @@ const Documents = () => {
       <div className="mx-auto w-full max-w-5xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Documents</h1>
-              <p className="text-gray-600 mt-2">
-                Upload and manage your immigration documents
-              </p>
-            </div>
-            <Button
-              onClick={() => setShowUpload(!showUpload)}
-              className="flex items-center space-x-2"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              <span>{showUpload ? "Cancel Upload" : "Upload Documents"}</span>
-            </Button>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">My Documents</h1>
+          <p className="text-gray-600 mt-2">
+            Upload and manage your immigration documents
+          </p>
         </div>
 
         <div className="space-y-8">
-          {/* Upload Section */}
-          {showUpload && (
-            <Card>
-              <Card.Header>
-                <h2 className="text-xl font-semibold">Upload Documents</h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  Upload your immigration documents for AI processing and secure
-                  storage
-                </p>
-              </Card.Header>
-              <Card.Body>
-                <DocumentUpload
-                  aiKey={user?.aiKey}
-                  onUploadSuccess={handleUploadSuccess}
-                  onUploadError={handleUploadError}
-                  maxFiles={20}
-                />
-              </Card.Body>
-            </Card>
-          )}
+          <Card>
+            <Card.Header>
+              <h2 className="text-xl font-semibold">Upload Documents</h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Upload your immigration documents for AI processing and secure
+                storage
+              </p>
+            </Card.Header>
+            <Card.Body>
+              <DocumentUpload
+                aiKey={user?.aiKey}
+                onUploadSuccess={handleUploadSuccess}
+                onUploadError={handleUploadError}
+                maxFiles={20}
+              />
+            </Card.Body>
+          </Card>
 
           {/* Document Manager */}
           <Card>
@@ -124,7 +99,6 @@ const Documents = () => {
                 <DocumentManager
                   key={refreshKey}
                   aiKey={user?.aiKey}
-                  onDocumentClick={handleDocumentClick}
                   showCategories={true}
                   showSearch={true}
                   showFilters={true}

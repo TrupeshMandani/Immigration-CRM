@@ -3,6 +3,7 @@ import { uploadService } from "../../services/uploadService";
 import FilePreview from "../common/FilePreview";
 import Button from "../common/Button";
 import Loading from "../common/Loading";
+import DocumentViewer from "./DocumentViewer";
 
 const DocumentManager = ({
   aiKey,
@@ -19,6 +20,7 @@ const DocumentManager = ({
   const [selectedCategory, setSelectedCategory] = useState("");
   const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
   const [sortBy, setSortBy] = useState("date"); // 'date', 'name', 'size', 'type'
+  const [viewingDocument, setViewingDocument] = useState(null);
 
   const categories = uploadService.getDocumentCategories();
 
@@ -29,6 +31,13 @@ const DocumentManager = ({
   const fetchDocuments = async () => {
     try {
       setLoading(true);
+      setError(""); // Clear any previous errors
+
+      if (!aiKey) {
+        throw new Error("No aiKey provided");
+      }
+
+      console.log("📁 DocumentManager: Fetching documents for aiKey:", aiKey);
       const response = await uploadService.getStudentFiles(aiKey);
       console.log("📁 DocumentManager: Received response:", response);
       console.log("📁 DocumentManager: Files array:", response.files);
@@ -39,19 +48,24 @@ const DocumentManager = ({
         console.log(`📁 File ${index}:`, file);
         return {
           ...file,
-          // Ensure required fields exist
+          id: file?.fileId || file?.id || file?.name || `doc-${index}`,
           name: file?.name || file?.originalName || `Document ${index + 1}`,
           mimeType: file?.mimeType || file?.type || "application/octet-stream",
           size: file?.size || 0,
-          webViewLink: file?.webViewLink || "#",
+          webViewLink: file?.webViewLink || file?.url || "#",
           uploadedAt:
-            file?.uploadedAt || file?.createdAt || new Date().toISOString(),
+            file?.uploadedAt ||
+            file?.modifiedTime ||
+            file?.createdAt ||
+            new Date().toISOString(),
         };
       });
 
+      console.log("📁 DocumentManager: Formatted files:", formattedFiles);
       setDocuments(formattedFiles);
     } catch (err) {
-      setError("Failed to load documents");
+      const errorMessage = err.message || "Failed to load documents";
+      setError(errorMessage);
       console.error("Error fetching documents:", err);
     } finally {
       setLoading(false);
@@ -125,10 +139,20 @@ const DocumentManager = ({
   const handleDocumentClick = (document) => {
     if (onDocumentClick) {
       onDocumentClick(document);
-    } else if (document.webViewLink) {
-      window.open(document.webViewLink, "_blank");
+    } else {
+      setViewingDocument(document);
     }
   };
+
+  if (!aiKey) {
+    return (
+      <div className={`space-y-4 ${className}`}>
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-600 px-4 py-3 rounded-md">
+          <p>No student key available. Please log in again.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -344,6 +368,14 @@ const DocumentManager = ({
             );
           })}
         </div>
+      )}
+
+      {/* Document Viewer Modal */}
+      {viewingDocument && (
+        <DocumentViewer
+          document={viewingDocument}
+          onClose={() => setViewingDocument(null)}
+        />
       )}
     </div>
   );
