@@ -9,10 +9,10 @@ const FilePreview = ({
   compact = false,
 }) => {
   const getFileIcon = (file) => {
-    if (file.mimeType) {
+    if (file?.mimeType) {
       return uploadService.getFileIcon(file.mimeType);
     }
-    if (file.type) {
+    if (file?.type) {
       return uploadService.getFileIcon(file.type);
     }
     return "📁";
@@ -32,10 +32,10 @@ const FilePreview = ({
   };
 
   const getFileType = (file) => {
-    if (file.mimeType) {
+    if (file?.mimeType && typeof file.mimeType === "string") {
       return file.mimeType.split("/")[1]?.toUpperCase() || "FILE";
     }
-    if (file.type) {
+    if (file?.type && typeof file.type === "string") {
       return file.type.split("/")[1]?.toUpperCase() || "FILE";
     }
     return "FILE";
@@ -126,4 +126,3 @@ const FilePreview = ({
 };
 
 export default FilePreview;
-

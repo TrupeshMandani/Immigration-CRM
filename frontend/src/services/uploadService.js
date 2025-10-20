@@ -85,6 +85,7 @@ export const uploadService = {
 
   // Get file icon based on type
   getFileIcon: (mimeType) => {
+    if (!mimeType || typeof mimeType !== "string") return "📁";
     if (mimeType.includes("pdf")) return "📄";
     if (mimeType.includes("image")) return "🖼️";
     if (mimeType.includes("word") || mimeType.includes("document")) return "📝";
@@ -100,4 +101,3 @@ export const uploadService = {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   },
 };
-

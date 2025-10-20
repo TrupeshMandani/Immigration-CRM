@@ -30,7 +30,26 @@ const DocumentManager = ({
     try {
       setLoading(true);
       const response = await uploadService.getStudentFiles(aiKey);
-      setDocuments(response.files || []);
+      console.log("📁 DocumentManager: Received response:", response);
+      console.log("📁 DocumentManager: Files array:", response.files);
+
+      // Ensure files array is properly formatted
+      const files = response.files || [];
+      const formattedFiles = files.map((file, index) => {
+        console.log(`📁 File ${index}:`, file);
+        return {
+          ...file,
+          // Ensure required fields exist
+          name: file?.name || file?.originalName || `Document ${index + 1}`,
+          mimeType: file?.mimeType || file?.type || "application/octet-stream",
+          size: file?.size || 0,
+          webViewLink: file?.webViewLink || "#",
+          uploadedAt:
+            file?.uploadedAt || file?.createdAt || new Date().toISOString(),
+        };
+      });
+
+      setDocuments(formattedFiles);
     } catch (err) {
       setError("Failed to load documents");
       console.error("Error fetching documents:", err);
@@ -91,8 +110,8 @@ const DocumentManager = ({
         case "size":
           return (b.size || 0) - (a.size || 0);
         case "type":
-          return (a.mimeType || a.type || "").localeCompare(
-            b.mimeType || b.type || ""
+          return (a?.mimeType || a?.type || "").localeCompare(
+            b?.mimeType || b?.type || ""
           );
         case "date":
         default:
@@ -275,7 +294,7 @@ const DocumentManager = ({
                   <div className="flex-shrink-0">
                     <span className="text-2xl">
                       {uploadService.getFileIcon(
-                        document.mimeType || document.type
+                        document?.mimeType || document?.type
                       )}
                     </span>
                   </div>
@@ -331,4 +350,3 @@ const DocumentManager = ({
 };
 
 export default DocumentManager;
-

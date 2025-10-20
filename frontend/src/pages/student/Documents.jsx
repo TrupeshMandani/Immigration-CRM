@@ -6,6 +6,7 @@ import DocumentUpload from "../../components/student/DocumentUpload";
 import DocumentManager from "../../components/student/DocumentManager";
 import Toast from "../../components/common/Toast";
 import Button from "../../components/common/Button";
+import ErrorBoundary from "../../components/common/ErrorBoundary";
 
 const Documents = () => {
   const { user } = useAuth();
@@ -118,14 +119,19 @@ const Documents = () => {
               </p>
             </Card.Header>
             <Card.Body>
-              <DocumentManager
-                key={refreshKey}
-                aiKey={user?.aiKey}
-                onDocumentClick={handleDocumentClick}
-                showCategories={true}
-                showSearch={true}
-                showFilters={true}
-              />
+              <ErrorBoundary
+                fallbackMessage="Failed to load documents. Please try refreshing the page."
+                showRetry={true}
+              >
+                <DocumentManager
+                  key={refreshKey}
+                  aiKey={user?.aiKey}
+                  onDocumentClick={handleDocumentClick}
+                  showCategories={true}
+                  showSearch={true}
+                  showFilters={true}
+                />
+              </ErrorBoundary>
             </Card.Body>
           </Card>
 
