@@ -17,3 +17,4 @@ const Loading = ({ size = "md", text = "Loading...", className = "" }) => {
 };
 
 export default Loading;
+

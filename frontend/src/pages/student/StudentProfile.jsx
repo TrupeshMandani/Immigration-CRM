@@ -6,31 +6,70 @@ import Navbar from "../../components/layout/Navbar";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
+import Toast from "../../components/common/Toast";
 
 const StudentProfile = () => {
   const { user } = useAuth();
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchStudentData = async (showRefresh = false) => {
+    try {
+      if (showRefresh) setRefreshing(true);
+      else setLoading(true);
+
+      if (user?.aiKey) {
+        const studentData = await studentService.getStudentByKey(user.aiKey);
+        setStudent(studentData);
+
+        if (showRefresh) {
+          setToast({
+            show: true,
+            message: "Profile updated successfully!",
+            type: "success",
+          });
+        }
+      }
+    } catch (err) {
+      setError("Failed to load profile data");
+      console.error("Error fetching student data:", err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchStudentData = async () => {
-      try {
-        setLoading(true);
-        if (user?.aiKey) {
-          const studentData = await studentService.getStudentByKey(user.aiKey);
-          setStudent(studentData);
-        }
-      } catch (err) {
-        setError("Failed to load profile data");
-        console.error("Error fetching student data:", err);
-      } finally {
-        setLoading(false);
+    fetchStudentData();
+  }, [user?.aiKey]);
+
+  // Listen for storage events to detect uploads from other tabs
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "profile_updated" && e.newValue) {
+        fetchStudentData(true);
+        localStorage.removeItem("profile_updated");
       }
     };
 
-    fetchStudentData();
-  }, [user?.aiKey]);
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const handleRefresh = () => {
+    fetchStudentData(true);
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({ ...prev, show: false }));
+  };
 
   if (loading) {
     return (
@@ -208,7 +247,20 @@ const StudentProfile = () => {
                 <Link to="/student/change-password">
                   <Button variant="outline">Change Password</Button>
                 </Link>
-                <Button variant="outline">Update Contact Info</Button>
+                <Button
+                  variant="outline"
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                >
+                  {refreshing ? (
+                    <>
+                      <Loading size="sm" />
+                      Refreshing...
+                    </>
+                  ) : (
+                    "Refresh Profile"
+                  )}
+                </Button>
               </div>
             </Card.Footer>
           </Card>
@@ -226,6 +278,14 @@ const StudentProfile = () => {
           </div>
         )}
       </div>
+
+      {/* Toast Notification */}
+      <Toast
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={closeToast}
+      />
     </div>
   );
 };

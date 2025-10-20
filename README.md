@@ -233,3 +233,4 @@ Immigration CRM/
 ## License
 
 This project is proprietary software for immigration business management.
+

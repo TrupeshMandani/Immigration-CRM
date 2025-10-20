@@ -105,3 +105,4 @@ exports.submitContact = async (req, res) => {
     res.status(500).json({ message: "Failed to submit contact request" });
   }
 };
+

@@ -16,9 +16,14 @@ exports.handleUpload = async (req, res) => {
       return res.status(400).json({ message: "No files uploaded" });
     }
 
-    // pick aiKey: prefer incoming body, else keep previous, else fallback
-    const bodyKey = req.body.aiKey && String(req.body.aiKey).trim();
-    let aiKey = bodyKey || `student-${Date.now()}`;
+    // Use aiKey from authenticated user (req.user.aiKey from auth middleware)
+    const aiKey = req.user.aiKey;
+
+    if (!aiKey) {
+      return res
+        .status(400)
+        .json({ message: "Student aiKey not found in authentication" });
+    }
 
     // 1) Extract profile using AI from uploaded files
     console.log("🤖 Starting AI extraction for", files.length, "files...");

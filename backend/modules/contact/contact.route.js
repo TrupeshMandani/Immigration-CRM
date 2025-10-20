@@ -6,3 +6,4 @@ const ctrl = require("./contact.controller");
 router.post("/", ctrl.submitContact);
 
 module.exports = router;
+

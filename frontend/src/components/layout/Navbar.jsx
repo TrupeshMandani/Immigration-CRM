@@ -86,12 +86,20 @@ const Navbar = () => {
                     </Link>
                   )}
                   {isStudent && (
-                    <Link
-                      to="/student/dashboard"
-                      className="text-sm text-gray-700 transition hover:text-primary"
-                    >
-                      Student Dashboard
-                    </Link>
+                    <>
+                      <Link
+                        to="/student/dashboard"
+                        className="text-sm text-gray-700 transition hover:text-primary"
+                      >
+                        Dashboard
+                      </Link>
+                      <Link
+                        to="/student/documents"
+                        className="text-sm text-gray-700 transition hover:text-primary"
+                      >
+                        Documents
+                      </Link>
+                    </>
                   )}
                   <Button variant="outline" size="sm" onClick={handleLogout}>
                     Logout
@@ -168,13 +176,22 @@ const Navbar = () => {
                   </Link>
                 )}
                 {isStudent && (
-                  <Link
-                    to="/student/dashboard"
-                    onClick={closeMenu}
-                    className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 transition hover:bg-gray-100 hover:text-primary"
-                  >
-                    Student Dashboard
-                  </Link>
+                  <>
+                    <Link
+                      to="/student/dashboard"
+                      onClick={closeMenu}
+                      className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 transition hover:bg-gray-100 hover:text-primary"
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/student/documents"
+                      onClick={closeMenu}
+                      className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 transition hover:bg-gray-100 hover:text-primary"
+                    >
+                      Documents
+                    </Link>
+                  </>
                 )}
                 <Button
                   variant="outline"
