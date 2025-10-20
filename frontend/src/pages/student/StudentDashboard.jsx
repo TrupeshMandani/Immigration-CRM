@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { studentService } from "../../services/authService";
-import Navbar from "../../components/layout/Navbar";
+import StudentLayout from "../../components/layout/StudentLayout";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
@@ -39,194 +39,256 @@ const StudentDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="flex items-center justify-center h-96">
+      <StudentLayout>
+        <div className="flex h-96 items-center justify-center">
           <Loading size="lg" text="Loading your dashboard..." />
         </div>
-      </div>
+      </StudentLayout>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+  const documentsUploaded = files.length;
+  const extractedFields = student?.profile
+    ? Object.keys(student.profile).length
+    : 0;
+  const lastUpdated = student?.updatedAt
+    ? new Date(student.updatedAt).toLocaleDateString()
+    : "Not yet";
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
+  return (
+    <StudentLayout>
+      <div className="mx-auto w-full max-w-5xl space-y-8">
+        <header>
           <h1 className="text-3xl font-bold text-gray-900">
             Welcome back, {user?.username}!
           </h1>
-          <p className="text-gray-600 mt-2">
-            Here's your immigration journey overview
+          <p className="mt-2 text-sm text-gray-600">
+            Keep track of your immigration documents and profile progress
           </p>
+        </header>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          <StatsCard
+            title="Documents Uploaded"
+            value={documentsUploaded}
+            icon={
+              <svg
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v9a2 2 0 01-2 2H6a2 2 0 01-2-2V7z"
+                />
+              </svg>
+            }
+            accent="secondary"
+          />
+          <StatsCard
+            title="Profile Fields Captured"
+            value={extractedFields}
+            icon={
+              <svg
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 12h6m-6 4h6M4 7h16"
+                />
+              </svg>
+            }
+            accent="primary"
+          />
+          <StatsCard
+            title="Last Updated"
+            value={lastUpdated}
+            icon={
+              <svg
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 8v4l3 3"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M21 12A9 9 0 113 12a9 9 0 0118 0z"
+                />
+              </svg>
+            }
+            accent="success"
+          />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Card */}
-          <div className="lg:col-span-2">
-            <Card>
-              <Card.Header>
-                <h2 className="text-xl font-semibold">Your Profile</h2>
-              </Card.Header>
-              <Card.Body>
-                {student?.profile && Object.keys(student.profile).length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(student.profile).map(([key, value]) => (
-                      <div key={key} className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-500 capitalize">
-                          {key.replace(/([A-Z])/g, " $1").trim()}
-                        </dt>
-                        <dd className="text-sm text-gray-900">
-                          {value || "Not provided"}
-                        </dd>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">
-                      No profile information available yet.
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      Upload your documents to get started with AI processing.
-                    </p>
-                  </div>
-                )}
-              </Card.Body>
-              <Card.Footer>
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <Card.Header>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Profile Overview
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    Keep your information up to date for faster processing
+                  </p>
+                </div>
                 <Link to="/student/profile">
-                  <Button variant="outline">View Full Profile</Button>
+                  <Button variant="outline" size="sm">
+                    View Full Profile
+                  </Button>
                 </Link>
-              </Card.Footer>
-            </Card>
-          </div>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              {student?.profile && Object.keys(student.profile).length > 0 ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {Object.entries(student.profile).slice(0, 6).map(([key, value]) => (
+                    <div key={key}>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        {key.replace(/([A-Z])/g, " $1").trim()}
+                      </p>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {value || "Not provided"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-md border border-dashed border-gray-200 p-8 text-center">
+                  <p className="text-sm text-gray-600">
+                    No profile information extracted yet. Upload documents to begin populating your profile automatically.
+                  </p>
+                </div>
+              )}
+            </Card.Body>
+          </Card>
 
-          {/* Quick Actions */}
           <div className="space-y-6">
             <Card>
               <Card.Header>
-                <h3 className="text-lg font-semibold">Quick Actions</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Quick Actions
+                </h3>
               </Card.Header>
               <Card.Body className="space-y-3">
                 <Link to="/student/profile" className="block">
                   <Button variant="outline" className="w-full justify-start">
-                    <svg
-                      className="w-4 h-4 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
                     View Profile
                   </Button>
                 </Link>
                 <Link to="/student/documents" className="block">
                   <Button variant="outline" className="w-full justify-start">
-                    <svg
-                      className="w-4 h-4 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
-                    </svg>
-                    Upload Documents
+                    Manage Documents
                   </Button>
                 </Link>
                 <Link to="/student/change-password" className="block">
                   <Button variant="outline" className="w-full justify-start">
-                    <svg
-                      className="w-4 h-4 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
                     Change Password
                   </Button>
                 </Link>
               </Card.Body>
             </Card>
 
-            {/* Documents */}
             <Card>
               <Card.Header>
-                <h3 className="text-lg font-semibold">Your Documents</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Recent Documents
+                </h3>
               </Card.Header>
               <Card.Body>
-                {files.length > 0 ? (
+                {files.length ? (
                   <div className="space-y-2">
-                    {files.slice(0, 3).map((file, index) => (
+                    {files.slice(0, 4).map((file) => (
                       <div
-                        key={index}
-                        className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                        key={file.id || file.name}
+                        className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
                       >
-                        <span className="text-sm text-gray-700 truncate">
-                          {file.name}
-                        </span>
+                        <span className="truncate pr-2">{file.name}</span>
                         <a
                           href={file.webViewLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-primary hover:text-blue-700 text-sm"
+                          className="text-secondary hover:text-indigo-600"
                         >
                           View
                         </a>
                       </div>
                     ))}
-                    {files.length > 3 && (
-                      <p className="text-xs text-gray-500 text-center">
-                        +{files.length - 3} more documents
+                    {files.length > 4 && (
+                      <p className="text-xs text-gray-500">
+                        +{files.length - 4} more in your library
                       </p>
                     )}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-sm text-center py-4">
-                    No documents uploaded yet
+                  <p className="text-sm text-gray-500">
+                    You haven't uploaded any documents yet.
                   </p>
                 )}
               </Card.Body>
+              <Card.Footer>
+                <Link to="/student/documents">
+                  <Button variant="primary" size="sm" className="w-full">
+                    Go to Documents
+                  </Button>
+                </Link>
+              </Card.Footer>
             </Card>
           </div>
         </div>
 
         {error && (
-          <div className="mt-8">
-            <Card>
-              <Card.Body>
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
-                  {error}
-                </div>
-              </Card.Body>
-            </Card>
-          </div>
+          <Card className="border-red-200 bg-red-50">
+            <Card.Body>
+              <p className="text-sm text-red-700">{error}</p>
+            </Card.Body>
+          </Card>
         )}
       </div>
-    </div>
+    </StudentLayout>
+  );
+};
+
+const StatsCard = ({ title, value, icon, accent = "primary" }) => {
+  const accentClass =
+    accent === "secondary"
+      ? "bg-secondary/10 text-secondary"
+      : accent === "success"
+      ? "bg-success/10 text-success"
+      : "bg-primary/10 text-primary";
+
+  return (
+    <Card>
+      <Card.Body>
+        <div className="flex items-center gap-3">
+          <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${accentClass}`}>
+            {icon}
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              {title}
+            </p>
+            <p className="text-2xl font-semibold text-gray-900">{value}</p>
+          </div>
+        </div>
+      </Card.Body>
+    </Card>
   );
 };
 

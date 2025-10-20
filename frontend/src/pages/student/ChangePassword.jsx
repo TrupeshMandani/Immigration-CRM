@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/layout/Navbar";
+import StudentLayout from "../../components/layout/StudentLayout";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import { useAuth } from "../../context/AuthContext";
@@ -66,10 +66,8 @@ const ChangePassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <StudentLayout>
+      <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-gray-900">
             Update Your Password
@@ -165,7 +163,7 @@ const ChangePassword = () => {
           </Card.Body>
         </Card>
       </div>
-    </div>
+    </StudentLayout>
   );
 };
 

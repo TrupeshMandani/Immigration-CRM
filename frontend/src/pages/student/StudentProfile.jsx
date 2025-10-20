@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { studentService } from "../../services/authService";
-import Navbar from "../../components/layout/Navbar";
+import StudentLayout from "../../components/layout/StudentLayout";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
@@ -73,20 +73,17 @@ const StudentProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="flex items-center justify-center h-96">
+      <StudentLayout>
+        <div className="flex h-96 items-center justify-center">
           <Loading size="lg" text="Loading your profile..." />
         </div>
-      </div>
+      </StudentLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <StudentLayout>
+      <div className="mx-auto w-full max-w-4xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
           <p className="text-gray-600 mt-2">
@@ -279,14 +276,13 @@ const StudentProfile = () => {
         )}
       </div>
 
-      {/* Toast Notification */}
       <Toast
         show={toast.show}
         message={toast.message}
         type={toast.type}
         onClose={closeToast}
       />
-    </div>
+    </StudentLayout>
   );
 };
 

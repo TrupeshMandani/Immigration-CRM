@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import Navbar from "../../components/layout/Navbar";
+import StudentLayout from "../../components/layout/StudentLayout";
 import Card from "../../components/common/Card";
 import DocumentUpload from "../../components/student/DocumentUpload";
 import DocumentManager from "../../components/student/DocumentManager";
@@ -53,10 +53,8 @@ const Documents = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <StudentLayout>
+      <div className="mx-auto w-full max-w-5xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -197,14 +195,13 @@ const Documents = () => {
         </div>
       </div>
 
-      {/* Toast Notification */}
       <Toast
         show={toast.show}
         message={toast.message}
         type={toast.type}
         onClose={closeToast}
       />
-    </div>
+    </StudentLayout>
   );
 };
 
