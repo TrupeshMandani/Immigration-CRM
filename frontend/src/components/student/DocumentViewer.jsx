@@ -22,6 +22,11 @@ const DocumentViewer = ({ document: doc, onClose }) => {
     };
   }, []);
 
+  // Safety check - if no document provided, don't render
+  if (!doc) {
+    return null;
+  }
+
   const handleDownload = () => {
     if (hasValidLink) {
       window.open(doc.url, "_blank");
@@ -40,7 +45,9 @@ const DocumentViewer = ({ document: doc, onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-gray-50">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 truncate">{doc.name}</h3>
+            <h3 className="font-semibold text-gray-900 truncate">
+              {doc.name || "Document"}
+            </h3>
             <p className="text-xs text-gray-500 mt-1">
               {doc.mimeType || "Unknown type"} •{" "}
               {doc.uploadedAt

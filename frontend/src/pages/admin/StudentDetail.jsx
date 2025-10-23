@@ -4,6 +4,7 @@ import AdminLayout from "../../components/layout/AdminLayout";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
+import DocumentViewer from "../../components/student/DocumentViewer";
 import { studentService } from "../../services/authService";
 
 const EMPTY_CONTACT = { name: "", email: "", phone: "", message: "" };
@@ -18,6 +19,7 @@ const StudentDetail = () => {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("pending");
   const [contactInfo, setContactInfo] = useState(EMPTY_CONTACT);
+  const [viewingDocument, setViewingDocument] = useState(null);
 
   const profileEntries = useMemo(() => {
     if (!student?.profile || !Object.keys(student.profile).length) {
@@ -192,6 +194,15 @@ const StudentDetail = () => {
     } catch (err) {
       console.error("Failed to delete student:", err);
       setError(err.response?.data?.message || "Failed to delete student.");
+    }
+  };
+
+  const handleDocumentClick = (document) => {
+    // Validate document before setting it
+    if (document && (document.name || document.key)) {
+      setViewingDocument(document);
+    } else {
+      console.error("Invalid document:", document);
     }
   };
 
@@ -430,10 +441,11 @@ const StudentDetail = () => {
           <Card.Body>
             {documents.length ? (
               <div className="space-y-3">
-                {documents.map((file) => (
+                {documents.map((file, index) => (
                   <div
-                    key={file.id}
-                    className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700"
+                    key={file.id || file.key || file.name || `doc-${index}`}
+                    onClick={() => handleDocumentClick(file)}
+                    className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
                       <span className="truncate font-medium text-gray-900">
@@ -447,21 +459,9 @@ const StudentDetail = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
-                      <a
-                        href={file.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
-                      >
-                        View
-                      </a>
-                      <a
-                        href={file.url}
-                        download={file.name}
-                        className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
-                      >
-                        Download
-                      </a>
+                      <span className="text-xs text-gray-500">
+                        Click to view
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -491,6 +491,14 @@ const StudentDetail = () => {
           </Card.Body>
         </Card>
       </div>
+
+      {/* Document Viewer Modal */}
+      {viewingDocument && (
+        <DocumentViewer
+          document={viewingDocument}
+          onClose={() => setViewingDocument(null)}
+        />
+      )}
     </AdminLayout>
   );
 };
