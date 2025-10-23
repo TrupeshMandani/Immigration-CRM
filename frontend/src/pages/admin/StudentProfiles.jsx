@@ -4,6 +4,10 @@ import AdminLayout from "../../components/layout/AdminLayout";
 import Card from "../../components/common/Card";
 import Loading from "../../components/common/Loading";
 import Button from "../../components/common/Button";
+import ViewToggle from "../../components/common/ViewToggle";
+import StudentCard from "../../components/admin/StudentCard";
+import StudentListItem from "../../components/admin/StudentListItem";
+import { useViewMode } from "../../hooks/useViewMode";
 import { studentService } from "../../services/authService";
 
 const StudentProfiles = () => {
@@ -11,6 +15,11 @@ const StudentProfiles = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [viewMode, setViewMode] = useViewMode(
+    "studentProfiles_viewMode",
+    ["card", "list"],
+    "card"
+  );
 
   const navigate = useNavigate();
 
@@ -23,7 +32,8 @@ const StudentProfiles = () => {
       } catch (err) {
         console.error("Failed to load students:", err);
         setError(
-          err.response?.data?.message || "Unable to load the student list right now."
+          err.response?.data?.message ||
+            "Unable to load the student list right now."
         );
       } finally {
         setLoading(false);
@@ -49,7 +59,6 @@ const StudentProfiles = () => {
         email.toLowerCase().includes(normalized)
       );
     });
-
   }, [search, students]);
 
   if (loading) {
@@ -72,7 +81,8 @@ const StudentProfiles = () => {
                 No students found
               </h2>
               <p className="text-sm text-gray-600">
-                Once you add students to the system, their profiles will appear here.
+                Once you add students to the system, their profiles will appear
+                here.
               </p>
               <div className="flex justify-center">
                 <Link to="/admin/students/create" className="inline-block">
@@ -91,9 +101,12 @@ const StudentProfiles = () => {
       <div className="space-y-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Student Profiles</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Student Profiles
+            </h1>
             <p className="mt-1 text-sm text-gray-600">
-              Browse all students and open their full profile with a single click.
+              Browse all students and open their full profile with a single
+              click.
             </p>
           </div>
           <div className="flex gap-3">
@@ -103,6 +116,12 @@ const StudentProfiles = () => {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 sm:w-72"
+            />
+            <ViewToggle
+              currentView={viewMode}
+              onViewChange={setViewMode}
+              views={["card", "list"]}
+              storageKey="studentProfiles_viewMode"
             />
             <Link to="/admin/students/create">
               <Button variant="primary">Add Student</Button>
@@ -118,23 +137,41 @@ const StudentProfiles = () => {
           </Card>
         )}
 
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredStudents.length ? (
-            filteredStudents.map((student) => (
-              <StudentPreviewCard
-                key={student._id}
-                student={student}
-                onOpen={() => navigate(`/admin/students/${student._id}`)}
-              />
-            ))
-          ) : (
-            <Card className="sm:col-span-2 xl:col-span-3">
-              <Card.Body className="py-16 text-center text-sm text-gray-500">
-                No students match your search.
-              </Card.Body>
-            </Card>
-          )}
-        </div>
+        {filteredStudents.length ? (
+          <>
+            {viewMode === "card" && (
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                {filteredStudents.map((student) => (
+                  <StudentPreviewCard
+                    key={student._id}
+                    student={student}
+                    onOpen={() => navigate(`/admin/students/${student._id}`)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {viewMode === "list" && (
+              <div className="space-y-4">
+                {filteredStudents.map((student) => (
+                  <StudentListItem
+                    key={student._id}
+                    student={student}
+                    onStatusChange={() =>
+                      navigate(`/admin/students/${student._id}`)
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <Card>
+            <Card.Body className="py-16 text-center text-sm text-gray-500">
+              No students match your search.
+            </Card.Body>
+          </Card>
+        )}
       </div>
     </AdminLayout>
   );
@@ -149,13 +186,10 @@ const StudentPreviewCard = ({ student, onOpen }) => {
     student.email || student.contactInfo?.email || "Not provided yet";
   const phone = student.contactInfo?.phone || "Not provided yet";
   const dob =
-    student.profile?.dateOfBirth ||
-    student.profile?.dob ||
-    "Not provided yet";
-  const created =
-    student.createdAt
-      ? new Date(student.createdAt).toLocaleDateString()
-      : "Unknown";
+    student.profile?.dateOfBirth || student.profile?.dob || "Not provided yet";
+  const created = student.createdAt
+    ? new Date(student.createdAt).toLocaleDateString()
+    : "Unknown";
 
   const statusClasses =
     student.status === "active"

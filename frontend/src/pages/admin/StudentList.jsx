@@ -5,6 +5,10 @@ import AdminLayout from "../../components/layout/AdminLayout";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
+import ViewToggle from "../../components/common/ViewToggle";
+import StudentCard from "../../components/admin/StudentCard";
+import StudentListItem from "../../components/admin/StudentListItem";
+import { useViewMode } from "../../hooks/useViewMode";
 
 const StudentList = () => {
   const [students, setStudents] = useState([]);
@@ -12,6 +16,11 @@ const StudentList = () => {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [viewMode, setViewMode] = useViewMode(
+    "studentList_viewMode",
+    ["card", "list", "table"],
+    "card"
+  );
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -79,24 +88,32 @@ const StudentList = () => {
                 Manage all your students and their information
               </p>
             </div>
-            <Link to="/admin/students/create">
-              <Button variant="primary">
-                <svg
-                  className="w-4 h-4 flex-shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                Create Student
-              </Button>
-            </Link>
+            <div className="flex items-center space-x-4">
+              <ViewToggle
+                currentView={viewMode}
+                onViewChange={setViewMode}
+                views={["card", "list", "table"]}
+                storageKey="studentList_viewMode"
+              />
+              <Link to="/admin/students/create">
+                <Button variant="primary">
+                  <svg
+                    className="w-4 h-4 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                  Create Student
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -146,105 +163,139 @@ const StudentList = () => {
           </Card.Body>
         </Card>
 
-        {/* Students Table */}
-        <Card>
-          <Card.Body className="p-0">
-            {students.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Created
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {students.map((student) => (
-                      <tr key={student._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {student.contactInfo?.name ||
-                              student.username ||
-                              "Unknown"}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {student.contactInfo?.email ||
-                              student.email ||
-                              "No email"}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              student.status === "active"
-                                ? "bg-green-100 text-green-800"
-                                : student.status === "pending"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {student.status?.charAt(0).toUpperCase() +
-                              student.status?.slice(1)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {student.createdAt
-                            ? new Date(student.createdAt).toLocaleDateString()
-                            : "Unknown"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          {student.status === "pending" && (
-                            <Button
-                              variant="success"
-                              size="sm"
-                              onClick={() => {
-                                const username = prompt(
-                                  "Enter username for this student:"
-                                );
-                                const password = prompt(
-                                  "Enter password for this student:"
-                                );
-                                if (username && password) {
-                                  handleActivateStudent(
-                                    student._id,
-                                    username,
-                                    password
-                                  );
-                                }
-                              }}
-                            >
-                              Activate
-                            </Button>
-                          )}
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDeleteStudent(student._id)}
-                          >
-                            Delete
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        {/* Students Display */}
+        {students.length > 0 ? (
+          <>
+            {viewMode === "card" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {students.map((student) => (
+                  <StudentCard
+                    key={student._id}
+                    student={student}
+                    onStatusChange={handleActivateStudent}
+                  />
+                ))}
               </div>
-            ) : (
+            )}
+
+            {viewMode === "list" && (
+              <div className="space-y-4">
+                {students.map((student) => (
+                  <StudentListItem
+                    key={student._id}
+                    student={student}
+                    onStatusChange={handleActivateStudent}
+                  />
+                ))}
+              </div>
+            )}
+
+            {viewMode === "table" && (
+              <Card>
+                <Card.Body className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Email
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Created
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {students.map((student) => (
+                          <tr key={student._id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-medium text-gray-900">
+                                {student.contactInfo?.name ||
+                                  student.username ||
+                                  "Unknown"}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {student.contactInfo?.email ||
+                                  student.email ||
+                                  "No email"}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span
+                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                  student.status === "active"
+                                    ? "bg-green-100 text-green-800"
+                                    : student.status === "pending"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                {student.status?.charAt(0).toUpperCase() +
+                                  student.status?.slice(1)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {student.createdAt
+                                ? new Date(
+                                    student.createdAt
+                                  ).toLocaleDateString()
+                                : "Unknown"}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                              {student.status === "pending" && (
+                                <Button
+                                  variant="success"
+                                  size="sm"
+                                  onClick={() => {
+                                    const username = prompt(
+                                      "Enter username for this student:"
+                                    );
+                                    const password = prompt(
+                                      "Enter password for this student:"
+                                    );
+                                    if (username && password) {
+                                      handleActivateStudent(
+                                        student._id,
+                                        username,
+                                        password
+                                      );
+                                    }
+                                  }}
+                                >
+                                  Activate
+                                </Button>
+                              )}
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => handleDeleteStudent(student._id)}
+                              >
+                                Delete
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card.Body>
+              </Card>
+            )}
+          </>
+        ) : (
+          <Card>
+            <Card.Body>
               <div className="text-center py-12">
                 <svg
                   className="mx-auto h-12 w-12 text-gray-400"
@@ -271,9 +322,9 @@ const StudentList = () => {
                   </Link>
                 </div>
               </div>
-            )}
-          </Card.Body>
-        </Card>
+            </Card.Body>
+          </Card>
+        )}
 
         {error && (
           <div className="mt-8">
@@ -292,4 +343,3 @@ const StudentList = () => {
 };
 
 export default StudentList;
-
