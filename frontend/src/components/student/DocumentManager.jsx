@@ -48,16 +48,12 @@ const DocumentManager = ({
         console.log(`📁 File ${index}:`, file);
         return {
           ...file,
-          id: file?.fileId || file?.id || file?.name || `doc-${index}`,
-          name: file?.name || file?.originalName || `Document ${index + 1}`,
-          mimeType: file?.mimeType || file?.type || "application/octet-stream",
+          id: file?.id || file?.key || file?.name || `doc-${index}`,
+          name: file?.name || `Document ${index + 1}`,
+          mimeType: file?.mimeType || "application/octet-stream",
           size: file?.size || 0,
-          webViewLink: file?.webViewLink || file?.url || "#",
-          uploadedAt:
-            file?.uploadedAt ||
-            file?.modifiedTime ||
-            file?.createdAt ||
-            new Date().toISOString(),
+          url: file?.url || "#",
+          uploadedAt: file?.uploadedAt || new Date().toISOString(),
         };
       });
 
@@ -346,7 +342,7 @@ const DocumentManager = ({
                       </p>
                     )}
                   </div>
-                  {document.webViewLink && (
+                  {document.url && (
                     <div className="flex-shrink-0">
                       <svg
                         className="w-4 h-4 text-gray-400"

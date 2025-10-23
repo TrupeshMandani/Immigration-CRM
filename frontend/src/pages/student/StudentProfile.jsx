@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { studentService } from "../../services/authService";
@@ -20,6 +20,74 @@ const StudentProfile = () => {
     type: "success",
   });
   const [refreshing, setRefreshing] = useState(false);
+
+  const prioritizedProfileEntries = useMemo(() => {
+    if (!student?.profile || typeof student.profile !== "object") {
+      return [];
+    }
+
+    const priorityMap = {
+      fullName: 1,
+      firstName: 1,
+      lastName: 1,
+      name: 1,
+      dateOfBirth: 1,
+      dob: 1,
+      nationality: 1,
+      passportNumber: 1,
+      passport: 1,
+      gender: 1,
+      maritalStatus: 1,
+      email: 2,
+      phone: 2,
+      phoneNumber: 2,
+      address: 2,
+      city: 2,
+      state: 2,
+      country: 2,
+      postalCode: 2,
+      zipCode: 2,
+      education: 3,
+      degree: 3,
+      university: 3,
+      college: 3,
+      institution: 3,
+      graduationDate: 3,
+      fieldOfStudy: 3,
+      major: 3,
+      gpa: 3,
+      workExperience: 4,
+      jobTitle: 4,
+      company: 4,
+      employer: 4,
+      yearsOfExperience: 4,
+      occupation: 4,
+      position: 4,
+      salary: 4,
+      visaType: 5,
+      visaStatus: 5,
+      arrivalDate: 5,
+      departureDate: 5,
+      immigrationStatus: 5,
+      travelHistory: 5,
+    };
+
+    return Object.entries(student.profile)
+      .sort(([keyA], [keyB]) => {
+        const priorityA = priorityMap[keyA] || 999;
+        const priorityB = priorityMap[keyB] || 999;
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
+        return keyA.localeCompare(keyB);
+      })
+      .map(([key, value]) => [key, value])
+      .filter(([, value]) =>
+        Array.isArray(value)
+          ? value.length > 0
+          : value !== undefined && value !== null && value !== ""
+      );
+  }, [student?.profile]);
 
   const fetchStudentData = async (showRefresh = false) => {
     try {
@@ -148,9 +216,9 @@ const StudentProfile = () => {
               </p>
             </Card.Header>
             <Card.Body>
-              {student?.profile && Object.keys(student.profile).length > 0 ? (
+              {prioritizedProfileEntries.length ? (
                 <dl className="divide-y divide-gray-200">
-                  {Object.entries(student.profile).map(([key, value]) => (
+                  {prioritizedProfileEntries.map(([key, value]) => (
                     <ProfileFieldDisplay key={key} label={key} value={value} />
                   ))}
                 </dl>

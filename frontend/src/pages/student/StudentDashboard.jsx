@@ -214,19 +214,19 @@ const StudentDashboard = () => {
               <Card.Body>
                 {files.length ? (
                   <div className="space-y-2">
-                    {files.slice(0, 4).map((file) => (
-                      <div
-                        key={file.id || file.name}
-                        className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
-                      >
-                        <span className="truncate pr-2">{file.name}</span>
-                        <a
-                          href={file.webViewLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-secondary hover:text-indigo-600"
-                        >
-                          View
+                {files.slice(0, 4).map((file) => (
+                  <div
+                    key={file.id || file.name}
+                    className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
+                  >
+                    <span className="truncate pr-2">{file.name}</span>
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-secondary hover:text-indigo-600"
+                    >
+                      View
                         </a>
                       </div>
                     ))}

@@ -1,14 +1,24 @@
 const Student = require("../../models/Student");
 
 /**
- * Upsert student by aiKey, merging profile/drive if provided.
- * data = { aiKey: string, profile?: object, drive?: object }
+ * Upsert student by aiKey, merging profile/documents if provided.
+ * data = { aiKey: string, profile?: object, documents?: object[] }
  */
 async function upsertStudent(data) {
-  const { aiKey, profile, drive, documents } = data;
+  console.log("🔍 upsertStudent called with:", data);
+
+  const { aiKey, profile, documents } = data;
 
   if (typeof aiKey !== "string") {
     throw new Error("aiKey must be a string");
+  }
+
+  if (profile && typeof profile !== "object") {
+    throw new Error("profile must be an object");
+  }
+
+  if (documents && !Array.isArray(documents)) {
+    throw new Error("documents must be an array");
   }
 
   const existing = await Student.findOne({ aiKey });
@@ -28,33 +38,26 @@ async function upsertStudent(data) {
     );
   }
 
-  if (drive) {
-    update.drive = drive;
-  }
-
   if (documents && documents.length) {
     const normalizedDocs = documents.map((doc) => ({
-      fileId: doc.id || doc.fileId || doc.googleFileId || doc.name,
-      name: doc.name || doc.originalName || "Document",
-      mimeType: doc.mimeType || doc.type || "application/octet-stream",
-      webViewLink: doc.webViewLink || doc.url || "#",
-      uploadedAt: doc.uploadedAt
-        ? new Date(doc.uploadedAt)
-        : doc.modifiedTime
-        ? new Date(doc.modifiedTime)
-        : new Date(),
+      key: doc.key,
+      bucket: doc.bucket,
+      name: doc.name,
+      mimeType: doc.mimeType,
+      size: doc.size,
+      uploadedAt: doc.uploadedAt ? new Date(doc.uploadedAt) : new Date(),
     }));
 
     const currentDocs = existing?.documents || [];
     const mergedMap = new Map();
 
     currentDocs.forEach((doc) => {
-      const key = doc.fileId || doc.name;
+      const key = doc.key || doc.name;
       mergedMap.set(key, doc);
     });
 
     normalizedDocs.forEach((doc) => {
-      const key = doc.fileId || doc.name;
+      const key = doc.key || doc.name;
       mergedMap.set(key, { ...mergedMap.get(key), ...doc });
     });
 

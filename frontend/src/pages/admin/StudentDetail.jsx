@@ -23,12 +23,86 @@ const StudentDetail = () => {
     if (!student?.profile || !Object.keys(student.profile).length) {
       return [];
     }
-    return Object.entries(student.profile).map(([key, value]) => ({
-      label: key
+
+    const priorityMap = {
+      fullName: 1,
+      firstName: 1,
+      lastName: 1,
+      name: 1,
+      dateOfBirth: 1,
+      dob: 1,
+      nationality: 1,
+      passportNumber: 1,
+      passport: 1,
+      gender: 1,
+      maritalStatus: 1,
+      email: 2,
+      phone: 2,
+      phoneNumber: 2,
+      address: 2,
+      city: 2,
+      state: 2,
+      country: 2,
+      postalCode: 2,
+      zipCode: 2,
+      education: 3,
+      degree: 3,
+      university: 3,
+      college: 3,
+      institution: 3,
+      graduationDate: 3,
+      fieldOfStudy: 3,
+      major: 3,
+      gpa: 3,
+      workExperience: 4,
+      jobTitle: 4,
+      company: 4,
+      employer: 4,
+      yearsOfExperience: 4,
+      occupation: 4,
+      position: 4,
+      salary: 4,
+      visaType: 5,
+      visaStatus: 5,
+      arrivalDate: 5,
+      departureDate: 5,
+      immigrationStatus: 5,
+      travelHistory: 5,
+    };
+
+    const formatLabel = (key) =>
+      key
         .replace(/([A-Z])/g, " $1")
-        .replace(/^./, (letter) => letter.toUpperCase()),
-      value: value ?? "Not provided",
-    }));
+        .replace(/^./, (letter) => letter.toUpperCase())
+        .trim();
+
+    const formatValue = (value) => {
+      if (Array.isArray(value)) {
+        return value.join(", ");
+      }
+      if (typeof value === "object" && value !== null) {
+        // Format objects in a readable way instead of JSON
+        return Object.entries(value)
+          .map(([key, val]) => `${formatLabel(key)}: ${val}`)
+          .join(", ");
+      }
+      return value ?? "Not provided";
+    };
+
+    return Object.entries(student.profile)
+      .sort(([keyA], [keyB]) => {
+        const priorityA = priorityMap[keyA] || 999;
+        const priorityB = priorityMap[keyB] || 999;
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
+        return keyA.localeCompare(keyB);
+      })
+      .map(([key, value]) => ({
+        key,
+        label: formatLabel(key),
+        value: formatValue(value),
+      }));
   }, [student?.profile]);
 
   useEffect(() => {
@@ -44,7 +118,9 @@ const StudentDetail = () => {
 
         if (data.aiKey) {
           try {
-            const filesResponse = await studentService.getStudentFiles(data.aiKey);
+            const filesResponse = await studentService.getStudentFiles(
+              data.aiKey
+            );
             setDocuments(filesResponse.files || []);
           } catch (docsError) {
             console.error("Failed to load student documents:", docsError);
@@ -55,7 +131,9 @@ const StudentDetail = () => {
         }
       } catch (err) {
         console.error("Failed to load student:", err);
-        setError(err.response?.data?.message || "Unable to load student details.");
+        setError(
+          err.response?.data?.message || "Unable to load student details."
+        );
       } finally {
         setLoading(false);
       }
@@ -90,7 +168,9 @@ const StudentDetail = () => {
       setContactInfo({ ...EMPTY_CONTACT, ...refreshed.contactInfo });
     } catch (err) {
       console.error("Failed to update student:", err);
-      setError(err.response?.data?.message || "Failed to update student details.");
+      setError(
+        err.response?.data?.message || "Failed to update student details."
+      );
     } finally {
       setSaving(false);
     }
@@ -133,7 +213,10 @@ const StudentDetail = () => {
             <Card.Body>
               <p className="text-center text-gray-600">
                 Student not found.{" "}
-                <Link to="/admin/students" className="text-primary hover:text-blue-700">
+                <Link
+                  to="/admin/students"
+                  className="text-primary hover:text-blue-700"
+                >
                   Return to students
                 </Link>
                 .
@@ -177,7 +260,9 @@ const StudentDetail = () => {
         <div className="grid gap-6 lg:grid-cols-3">
           <Card className="lg:col-span-2">
             <Card.Header>
-              <h2 className="text-xl font-semibold">Account & Contact Details</h2>
+              <h2 className="text-xl font-semibold">
+                Account & Contact Details
+              </h2>
             </Card.Header>
             <Card.Body>
               <form className="space-y-6" onSubmit={handleSave}>
@@ -290,12 +375,16 @@ const StudentDetail = () => {
                 <span className="capitalize">{student.status}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-medium text-gray-900">First Login Pending</span>
+                <span className="font-medium text-gray-900">
+                  First Login Pending
+                </span>
                 <span>{student.isFirstLogin ? "Yes" : "No"}</span>
               </div>
               <div>
                 <span className="font-medium text-gray-900">Email</span>
-                <p className="mt-1 break-all">{student.email || "Not assigned"}</p>
+                <p className="mt-1 break-all">
+                  {student.email || "Not assigned"}
+                </p>
               </div>
               <div>
                 <span className="font-medium text-gray-900">Last Updated</span>
@@ -318,15 +407,17 @@ const StudentDetail = () => {
               <div className="grid gap-6 sm:grid-cols-2">
                 {profileEntries.map((entry) => (
                   <div key={entry.label}>
-                    <p className="text-sm font-medium text-gray-500">{entry.label}</p>
+                    <p className="text-sm font-medium text-gray-500">
+                      {entry.label}
+                    </p>
                     <p className="mt-1 text-sm text-gray-900">{entry.value}</p>
                   </div>
                 ))}
               </div>
             ) : (
               <p className="text-sm text-gray-500">
-                No profile data captured yet. Once documents are processed, extracted
-                data will appear here.
+                No profile data captured yet. Once documents are processed,
+                extracted data will appear here.
               </p>
             )}
           </Card.Body>
@@ -344,22 +435,41 @@ const StudentDetail = () => {
                     key={file.id}
                     className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700"
                   >
-                    <span className="truncate">{file.name}</span>
-                    <a
-                      href={file.webViewLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:text-blue-700"
-                    >
-                      View
-                    </a>
+                    <div className="flex-1 min-w-0">
+                      <span className="truncate font-medium text-gray-900">
+                        {file.name}
+                      </span>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {file.mimeType} •{" "}
+                        {file.size
+                          ? `${Math.round(file.size / 1024)} KB`
+                          : "Unknown size"}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 ml-4">
+                      <a
+                        href={file.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+                      >
+                        View
+                      </a>
+                      <a
+                        href={file.url}
+                        download={file.name}
+                        className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                      >
+                        Download
+                      </a>
+                    </div>
                   </div>
                 ))}
               </div>
             ) : (
               <p className="text-sm text-gray-500">
-                No documents available yet. Uploads completed by the student will
-                appear here automatically.
+                No documents available yet. Uploads completed by the student
+                will appear here automatically.
               </p>
             )}
           </Card.Body>
@@ -371,7 +481,8 @@ const StudentDetail = () => {
                 Delete Student
               </h3>
               <p className="text-sm text-gray-600">
-                Removing a student will revoke their access and delete their record.
+                Removing a student will revoke their access and delete their
+                record.
               </p>
             </div>
             <Button variant="danger" onClick={handleDelete}>

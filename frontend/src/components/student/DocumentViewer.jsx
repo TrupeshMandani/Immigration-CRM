@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 
 const DocumentViewer = ({ document: doc, onClose }) => {
+  const hasValidLink = doc?.url && doc.url !== "#";
   const isPDF = doc?.mimeType?.includes("pdf");
   const isImage = doc?.mimeType?.includes("image");
-  const hasValidLink = doc?.webViewLink && doc.webViewLink !== "#";
 
   // Close on ESC key
   useEffect(() => {
@@ -24,7 +24,7 @@ const DocumentViewer = ({ document: doc, onClose }) => {
 
   const handleDownload = () => {
     if (hasValidLink) {
-      window.open(doc.webViewLink, "_blank");
+      window.open(doc.url, "_blank");
     }
   };
 
@@ -50,25 +50,52 @@ const DocumentViewer = ({ document: doc, onClose }) => {
           </div>
           <div className="flex items-center space-x-2 ml-4">
             {hasValidLink ? (
-              <button
-                onClick={handleDownload}
-                className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center space-x-2"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <>
+                <button
+                  onClick={handleDownload}
+                  className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors flex items-center space-x-2"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
-                </svg>
-                <span>Open in Drive</span>
-              </button>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                  <span>Download</span>
+                </button>
+                <button
+                  onClick={handleDownload}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                  <span>View</span>
+                </button>
+              </>
             ) : (
               <div className="px-3 py-2 bg-gray-100 text-gray-600 text-sm rounded flex items-center space-x-2">
                 <svg
@@ -112,96 +139,38 @@ const DocumentViewer = ({ document: doc, onClose }) => {
         {/* Content */}
         <div className="flex-1 overflow-auto bg-gray-100">
           {!hasValidLink ? (
-            <div className="flex items-center justify-center h-full p-8">
-              <div className="text-center max-w-md">
-                <svg
-                  className="w-16 h-16 text-blue-400 mx-auto mb-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <h4 className="text-lg font-medium text-gray-900 mb-2">
-                  Document Stored Successfully
-                </h4>
-                <p className="text-sm text-gray-600 mb-4">
-                  Your document has been uploaded and processed by AI. The
-                  preview feature will be available once Google Drive is
-                  configured by your administrator.
-                </p>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h5 className="font-medium text-blue-900 mb-2">
-                    Document Information:
-                  </h5>
-                  <div className="text-sm text-blue-800 space-y-1">
-                    <p>
-                      <strong>Name:</strong> {doc.name}
-                    </p>
-                    <p>
-                      <strong>Type:</strong> {doc.mimeType || "Unknown"}
-                    </p>
-                    <p>
-                      <strong>Uploaded:</strong>{" "}
-                      {doc.uploadedAt
-                        ? new Date(doc.uploadedAt).toLocaleDateString()
-                        : "Unknown"}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500 mt-4">
-                  Contact your administrator to enable Google Drive integration
-                  for document previews.
+            <div className="flex h-full items-center justify-center p-8">
+              <div className="max-w-md text-center">
+                <p className="text-gray-600">
+                  Unable to load document preview. Please try again.
                 </p>
               </div>
             </div>
           ) : isPDF ? (
             <iframe
-              src={`${doc.webViewLink}/preview`}
-              className="w-full h-full min-h-[600px]"
+              src={doc.url}
+              className="h-full min-h-[600px] w-full"
               title={doc.name}
             />
           ) : isImage ? (
             <div className="flex items-center justify-center p-8 h-full">
               <img
-                src={doc.webViewLink}
+                src={doc.url}
                 alt={doc.name}
                 className="max-w-full max-h-full object-contain rounded shadow-lg"
               />
             </div>
           ) : (
-            <div className="flex items-center justify-center h-full p-8">
-              <div className="text-center max-w-md">
-                <svg
-                  className="w-16 h-16 text-gray-400 mx-auto mb-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                  />
-                </svg>
-                <h4 className="text-lg font-medium text-gray-900 mb-2">
-                  Document Available
-                </h4>
-                <p className="text-sm text-gray-600 mb-4">
-                  This file type cannot be previewed in the browser. Click the
-                  button below to open it in Google Drive.
+            <div className="flex h-full items-center justify-center p-8 text-gray-500">
+              <div className="text-center">
+                <p className="mb-4">
+                  Preview not available for this file type.
                 </p>
                 <button
                   onClick={handleDownload}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
-                  Open in Google Drive
+                  Download File
                 </button>
               </div>
             </div>

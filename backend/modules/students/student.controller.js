@@ -1,8 +1,7 @@
 const crypto = require("crypto");
 const Student = require("../../models/Student");
 const Admin = require("../../models/Admin");
-const { google } = require("googleapis");
-const { getDriveClient } = require("../drive/drive.service");
+const { getPresignedUrl } = require("../s3/s3.service");
 const { sendEmail } = require("../../utils/sendEmail");
 const { APP_BASE_URL } = require("../../config/env");
 
@@ -16,6 +15,31 @@ const createTempPassword = () => {
       .slice(0, 10);
   }
   return candidate;
+};
+
+const generateStudentId = (firstName, lastName) => {
+  // Clean and format names
+  const cleanFirstName = firstName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-zA-Z]/g, ""); // Remove non-alphabetic characters
+
+  const cleanLastName = lastName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-zA-Z]/g, ""); // Remove non-alphabetic characters
+
+  // Get current date in YYYYMMDD format
+  const currentDate = new Date();
+  const dateString =
+    currentDate.getFullYear().toString() +
+    (currentDate.getMonth() + 1).toString().padStart(2, "0") +
+    currentDate.getDate().toString().padStart(2, "0");
+
+  // Generate student ID: firstname_lastname_YYYYMMDD
+  const studentId = `${cleanFirstName}_${cleanLastName}_${dateString}`;
+
+  return studentId;
 };
 
 const buildApprovalEmail = ({ name, username, password }) => {
@@ -188,12 +212,10 @@ exports.approveContactRequest = async (req, res) => {
 exports.activateStudent = async (req, res) => {
   try {
     const { id } = req.params;
-    const { username, password } = req.body;
+    const { password } = req.body;
 
-    if (!username || !password) {
-      return res
-        .status(400)
-        .json({ message: "Username and password required" });
+    if (!password) {
+      return res.status(400).json({ message: "Password required" });
     }
 
     const student = await Student.findById(id);
@@ -205,8 +227,31 @@ exports.activateStudent = async (req, res) => {
       return res.status(400).json({ message: "Student is not pending" });
     }
 
+    // Extract first and last name from contact info
+    const fullName = student.contactInfo?.name || "";
+    const nameParts = fullName.trim().split(" ");
+    const firstName = nameParts[0] || "student";
+    const lastName = nameParts.slice(1).join("") || "user";
+
+    // Generate student ID based on name and date
+    const generatedUsername = generateStudentId(firstName, lastName);
+
+    // Check if generated username already exists
+    const existingStudent = await Student.findOne({
+      _id: { $ne: student._id },
+      username: generatedUsername,
+      status: { $ne: "inactive" },
+    });
+
+    if (existingStudent) {
+      // If username exists, append a random suffix
+      const randomSuffix = Math.random().toString(36).substr(2, 4);
+      student.username = `${generatedUsername}_${randomSuffix}`;
+    } else {
+      student.username = generatedUsername;
+    }
+
     // Update student with credentials
-    student.username = username;
     student.password = password;
     student.status = "active";
     student.email = student.contactInfo.email; // Use contact email as login email
@@ -405,7 +450,7 @@ exports.createStudent = async (req, res) => {
   }
 };
 
-// list Drive files
+// list S3 files with pre-signed URLs
 exports.getStudentFiles = async (req, res) => {
   try {
     const student = await Student.findOne({ aiKey: req.params.aiKey });
@@ -413,17 +458,37 @@ exports.getStudentFiles = async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    // Return documents from student model's documents array
-    const documents = student.documents || [];
+    // Generate pre-signed URLs for all documents
+    const documentsWithUrls = await Promise.all(
+      (student.documents || []).map(async (doc) => {
+        // Convert Mongoose subdocument to plain object
+        const docObj = doc.toObject ? doc.toObject() : doc;
+        try {
+          const presignedUrl = await getPresignedUrl(docObj.key);
+          return {
+            ...docObj,
+            url: presignedUrl,
+          };
+        } catch (error) {
+          console.error(
+            `Error generating URL for ${docObj.name}:`,
+            error.message
+          );
+          return {
+            ...docObj,
+            url: null,
+          };
+        }
+      })
+    );
 
     console.log(
-      `📁 Fetching files for student ${req.params.aiKey}: ${documents.length} documents found`
+      `📁 Fetching files for student ${req.params.aiKey}: ${documentsWithUrls.length} documents found`
     );
 
     res.json({
-      folder: student.drive?.webViewLink || null,
-      files: documents,
-      totalFiles: documents.length,
+      files: documentsWithUrls,
+      totalFiles: documentsWithUrls.length,
     });
   } catch (error) {
     console.error("Get student files error:", error);

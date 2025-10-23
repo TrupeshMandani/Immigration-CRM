@@ -1,9 +1,31 @@
 const Student = require("../../models/Student");
 const { sendEmail } = require("../../utils/sendEmail");
-const {
-  ADMIN_NOTIFICATIONS_EMAIL,
-  APP_BASE_URL,
-} = require("../../config/env");
+const { ADMIN_NOTIFICATIONS_EMAIL, APP_BASE_URL } = require("../../config/env");
+
+const generateAiKey = (firstName, lastName) => {
+  // Clean and format names
+  const cleanFirstName = firstName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-zA-Z]/g, ""); // Remove non-alphabetic characters
+
+  const cleanLastName = lastName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-zA-Z]/g, ""); // Remove non-alphabetic characters
+
+  // Get current date in YYYYMMDD format
+  const currentDate = new Date();
+  const dateString =
+    currentDate.getFullYear().toString() +
+    (currentDate.getMonth() + 1).toString().padStart(2, "0") +
+    currentDate.getDate().toString().padStart(2, "0");
+
+  // Generate AI key: lastname_firstname_YYYYMMDD
+  const aiKey = `${cleanLastName}_${cleanFirstName}_${dateString}`;
+
+  return aiKey;
+};
 
 // Submit contact form
 exports.submitContact = async (req, res) => {
@@ -41,9 +63,27 @@ exports.submitContact = async (req, res) => {
       });
     }
 
+    // Extract first and last name from the full name
+    const nameParts = name.trim().split(" ");
+    const firstName = nameParts[0] || "student";
+    const lastName = nameParts.slice(1).join("") || "user";
+
+    // Generate AI key based on name and date
+    const generatedAiKey = generateAiKey(firstName, lastName);
+
+    // Check if AI key already exists
+    const existingAiKey = await Student.findOne({ aiKey: generatedAiKey });
+    let finalAiKey = generatedAiKey;
+
+    if (existingAiKey) {
+      // If AI key exists, append a random suffix
+      const randomSuffix = Math.random().toString(36).substr(2, 4);
+      finalAiKey = `${generatedAiKey}_${randomSuffix}`;
+    }
+
     // Create pending student record
     const student = new Student({
-      aiKey: `contact-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      aiKey: finalAiKey,
       status: "pending",
       contactInfo: {
         name,
@@ -92,7 +132,10 @@ exports.submitContact = async (req, res) => {
           `,
         });
       } catch (notifyError) {
-        console.error("Failed to send admin contact notification:", notifyError);
+        console.error(
+          "Failed to send admin contact notification:",
+          notifyError
+        );
       }
     }
 
@@ -105,4 +148,3 @@ exports.submitContact = async (req, res) => {
     res.status(500).json({ message: "Failed to submit contact request" });
   }
 };
-

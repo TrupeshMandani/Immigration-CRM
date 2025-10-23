@@ -5,10 +5,7 @@ const studentSchema = new mongoose.Schema(
   {
     aiKey: { type: String, unique: true, index: true }, // internal invisible ID
     profile: { type: mongoose.Schema.Types.Mixed }, // any JSON structure
-    drive: {
-      folderId: String,
-      webViewLink: String,
-    },
+    // Remove drive field - no longer needed for S3
     // Authentication fields
     username: {
       type: String,
@@ -51,11 +48,12 @@ const studentSchema = new mongoose.Schema(
     },
     documents: [
       {
-        fileId: String,
-        name: String,
-        mimeType: String,
-        webViewLink: String,
-        uploadedAt: Date,
+        key: String, // S3 key (e.g., "student123/passport.pdf")
+        bucket: String, // S3 bucket name
+        name: String, // Original filename
+        mimeType: String, // File mime type
+        size: Number, // File size in bytes
+        uploadedAt: Date, // Upload timestamp
       },
     ],
   },
